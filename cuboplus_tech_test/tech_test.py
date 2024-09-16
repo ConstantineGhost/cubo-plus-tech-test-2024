@@ -15,8 +15,8 @@ mempool_balance = address_info['mempool_stats']['funded_txo_sum'] - address_info
 
 transactions = requests.get(f'{base_url}/address/{address}/txs').json()
 
-balance_30_days_ago = onchain_balance
-balance_7_days_ago = onchain_balance
+variance_30_days_ago = 0
+variance_7_days_ago = 0
 
 def calculate_transaction_amount(tx, address):
     amount = 0
@@ -40,7 +40,7 @@ for tx in transactions:
         if block_time < timestamp_30_days_ago:
             break  
         tx_amount = calculate_transaction_amount(tx, address)
-        balance_30_days_ago -= tx_amount
+        variance_30_days_ago += tx_amount
 
 for tx in transactions:
     if tx['status']['confirmed']:
@@ -50,15 +50,14 @@ for tx in transactions:
             break  
 
         tx_amount = calculate_transaction_amount(tx, address)
-        balance_7_days_ago -= tx_amount
+        variance_7_days_ago += tx_amount
 
 currentbalanceonbtc = onchain_balance / 100000000
 print(f'On-chain Balance: {onchain_balance} SATs / {currentbalanceonbtc} BTC')
 print(f'Mempool Balance: {mempool_balance} SATs')
-variance30 = onchain_balance - balance_30_days_ago
-variance30btc = variance30 / 100000000
-variance7 = onchain_balance - balance_7_days_ago
-variance7btc = variance7 / 100000000
+variance30btc = variance_30_days_ago / 100000000
+variance7btc = variance_7_days_ago / 100000000
 
-print(f'Variance on Balance 30 days ago: {variance30} SATs / + {variance30btc} BTC')
-print(f'Variance on Balance Balance 7 days ago: {variance7} SATs / + {variance7btc} BTC')
+print(f'Variance on Balance 30 days ago: {variance_30_days_ago} SATs / + {variance30btc} BTC')
+print(f'Variance on Balance Balance 7 days ago: {variance_7_days_ago} SATs / + {variance7btc} BTC')
+
